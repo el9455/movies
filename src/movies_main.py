@@ -1,3 +1,8 @@
+"""
+movies_main.py
+
+"""
+
 import sys, time
 import rating, movie
 
