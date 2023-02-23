@@ -1,17 +1,21 @@
 """
 movies_main.py
 
+Main file for querying IMDB. Consists of the main loop function and excess query and helper functions that 
+require both movie and rating dictionaries.
 """
 
 import sys, time
 import rating, movie
 
 def print_movie_results(movies):
+    """Neatly print movie data for the user."""
     for tconst, m in movies.items():
         print("\t", end="")
         movie.print_info(tconst, m)
 
 def top_n_votes(movies, ratings, titleType, num):
+    """Return a dictionary of the top n most voted on movies"""
     rel_ratings = {}
 
     for tconst, m in movies.items():
@@ -29,6 +33,7 @@ def top_n_votes(movies, ratings, titleType, num):
     return top_ratings
 
 def top_n_rated(movies, ratings, titleType, num, startYear, endYear):
+    """Return a dicitonary of the n highest rated movies falling between startYear and endYear"""
     rel_ratings = {}
     for tconst, m in movies.items():
         if m.titleType == titleType and tconst in list(ratings.keys()) \
@@ -48,6 +53,7 @@ def top_n_rated(movies, ratings, titleType, num, startYear, endYear):
     return top_ratings
 
 def query_contains(movies, titleType, words):
+    """Handle input and output for the CONTAINS query"""
     timer_start()
     contains = movie.contains(movies, titleType, words)
 
@@ -60,6 +66,7 @@ def query_contains(movies, titleType, words):
     timer_finish()
 
 def query_lookup(movies, ratings, tconst):
+    """Handle input and output for the LOOKUP query"""
     tconst = int(tconst[2:])
 
     if not tconst in movies.keys() and tconst not in ratings.keys():
@@ -72,6 +79,7 @@ def query_lookup(movies, ratings, tconst):
         rating.print_info(tconst, ratings[tconst])
 
 def query_most_votes(movies, ratings, titleType, places):
+    """Handle input and output for the MOST_VOTES query"""
     timer_start()
 
     voted = top_n_votes(movies, ratings, titleType, int(places))
@@ -87,6 +95,7 @@ def query_most_votes(movies, ratings, titleType, places):
     timer_finish()
 
 def query_runtime(movies, titleType, minlen, maxlen):
+    """Handle input and output for the RUNTIME query"""
     timer_start()
     timely = movie.runtime(movies, titleType, int(minlen), int(maxlen))
     
@@ -99,6 +108,7 @@ def query_runtime(movies, titleType, minlen, maxlen):
     timer_finish()
 
 def query_top(movies, ratings, titleType, num, startYear, endYear):
+    """Handle input and output for the TOP query"""
     timer_start()
     top = top_n_rated(movies, ratings, titleType, int(num), int(startYear), int(endYear))
 
@@ -113,6 +123,7 @@ def query_top(movies, ratings, titleType, num, startYear, endYear):
     timer_finish()
 
 def query_year_and_genre(movies, titleType, year, genre):
+    """Handle input and output for the YEAR_AND_GENRE query"""
     timer_start()
     relevant = movie.in_year_and_genre(movies, titleType, int(year), genre)
     
@@ -129,11 +140,13 @@ def query_year_and_genre(movies, titleType, year, genre):
 global_timer = 0
 
 def timer_start():
+    """Start timer"""
     global global_timer
 
     global_timer = time.time()
 
 def timer_finish():
+    """End timer and print elapsed time in seconds"""
     global global_timer
 
     print("elapsed time (s):", time.time() - global_timer)
@@ -146,6 +159,7 @@ SMALL_RATINGS_FILE = "data/small.ratings.tsv"
 LARGE_RATINGS_FILE = "data/title.ratings.tsv"
 
 def main():
+    """Main function to be executed. Loops through stdin and processes queries"""
     if len(sys.argv) > 1 and sys.argv[1] == "small":
         movies_file = SMALL_MOVIES_FILE
         ratings_file = SMALL_RATINGS_FILE
