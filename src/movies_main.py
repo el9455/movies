@@ -6,6 +6,42 @@ def print_movie_results(movies):
         print("\t", end="")
         movie.print_info(tconst, m)
 
+def top_n_votes(movies, ratings, titleType, num):
+    rel_ratings = {}
+
+    for tconst, m in movies.items():
+        if m.titleType == titleType and tconst in list(ratings.keys()):
+            rel_ratings[tconst] = ratings[tconst]
+
+    if len(rel_ratings) < num:
+        return {}
+
+    top_ratings = {}
+    for n in range(0, num):
+        tconst, r = rating.quick_select_votes(rel_ratings, n)
+        top_ratings[tconst] = r
+        
+    return top_ratings
+
+def top_n_rated(movies, ratings, titleType, num, startYear, endYear):
+    rel_ratings = {}
+    for tconst, m in movies.items():
+        if m.titleType == titleType and tconst in list(ratings.keys()) \
+            and m.startYear >= startYear and m.endYear <= endYear \
+            and ratings[tconst].numVotes > 1000: 
+
+            rel_ratings[tconst] = ratings[tconst]
+
+    if len(rel_ratings) < num:
+        return {}
+
+    top_ratings = {}
+    for n in range(0, num):
+        tconst, r = rating.quick_select_avg(rel_ratings, n)
+        top_ratings[tconst] = r
+        
+    return top_ratings
+
 def query_contains(movies, titleType, words):
     timer_start()
     contains = movie.contains(movies, titleType, words)
@@ -30,6 +66,21 @@ def query_lookup(movies, ratings, tconst):
         print("\tRATING:", end=" ")
         rating.print_info(tconst, ratings[tconst])
 
+def query_most_votes(movies, ratings, titleType, places):
+    timer_start()
+
+    voted = top_n_votes(movies, ratings, titleType, int(places))
+
+    if len(voted.keys()) < 1:
+        print("\tNo match found!")
+
+    else:
+        for tconst in voted.keys():
+            print("\tVOTES: {}, MOVIE:".format(voted[tconst].numVotes), end=" ")
+            movie.print_info(tconst, movies[tconst])
+
+    timer_finish()
+
 def query_runtime(movies, titleType, minlen, maxlen):
     timer_start()
     timely = movie.runtime(movies, titleType, int(minlen), int(maxlen))
@@ -40,6 +91,20 @@ def query_runtime(movies, titleType, minlen, maxlen):
     else:
         print_movie_results(timely)
 
+    timer_finish()
+
+def query_top(movies, ratings, titleType, num, startYear, endYear):
+    timer_start()
+    top = top_n_rated(movies, ratings, titleType, int(num), int(startYear), int(endYear))
+
+    if len(top) < 1:
+        print("\tNo match found!")
+
+    else:
+        for tconst in top.keys():
+            print("\t\tRATING: {}, VOTES: {}, MOVIE:".format(top[tconst].averageRating, top[tconst].numVotes), end=" ")
+            movie.print_info(tconst, movies[tconst])
+    
     timer_finish()
 
 def query_year_and_genre(movies, titleType, year, genre):
@@ -112,6 +177,12 @@ def main():
 
         elif tokens[0] == "YEAR_AND_GENRE":
             query_year_and_genre(movies, tokens[1], tokens[2], tokens[3])
+
+        elif tokens[0] == "MOST_VOTES":
+            query_most_votes(movies, ratings, tokens[1], tokens[2])
+
+        elif tokens[0] == "TOP":
+            query_top(movies, ratings, tokens[1], tokens[2], tokens[3], tokens[4])
 
         print()
             
